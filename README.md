@@ -1,4 +1,4 @@
-![alt text](<deluxemenu logo.png>)
+![alt text](deluxemenu.png)
 
 web editor for DeluxeMenu plugin
 website: https://DeluxeMenu.dianelito.online
