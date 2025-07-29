@@ -1,7 +1,6 @@
 # DeluxeMenuWebEditor
 web editor for DeluxeMenu plugin
-website: https://DeluxMenu.dianelito.online (it's not fully loaded on the Vercel yet)
-Temporary web address (using GitHub codespace): https://bookish-couscous-j6px7g7594fp66-3000.app.github.dev/
+website: https://DeluxMenu.dianelito.online
 
 ## 📄 License
 
