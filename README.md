@@ -1,4 +1,6 @@
-# DeluxMenu.dianelito.online
+# DeluxeMenuWebEditor
+web editor for DeluxeMenu plugin
+website: https://DeluxMenu.dianelito.online (it's not fully loaded on the host yet)
 
 ## 📄 License
 
