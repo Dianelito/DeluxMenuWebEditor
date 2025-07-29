@@ -7,9 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "Dianelito",
-  "license": "GNU General Public License v3.0 (GPLv3)",
-  "description": "DeluxeMenus Web Editor",
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
     "ejs": "^3.1.10",
     "express": "^5.1.0"

@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseSimpleYaml(content) {
         const lines = content.split('\n');
         let menuTitle = '';
+        let title = '';
         let openCommand = '';
         let size = '9';
         const items = {};
@@ -80,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (parts.length === 2) {
                     const key = parts[0];
                     const value = parts[1].replace(/'/g, '');
-                    if (key === 'open_command') openCommand = value.slice(1, -1);
+                    if (key === 'title') title = value;
                     if (key === 'size') size = value;
                     if (currentItem && currentSection === '') {
                         items[currentItem][key] = value;
@@ -93,11 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
-        return { menuTitle, openCommand, size, items };
+        return { menuTitle, openCommand, size, items, title };
     }
 
     function populateForm(menuData) {
         document.getElementById('menu_title').value = menuData.menuTitle;
+        document.getElementById('title').value = menuData.title;
         document.getElementById('open_command').value = menuData.openCommand;
         sizeSelector.value = menuData.size;
 

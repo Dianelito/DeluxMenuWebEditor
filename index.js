@@ -25,6 +25,8 @@ app.post('/generate', (req, res) => {
 
     let yaml = `${menu.menu_title}:
 `;
+    yaml += `  title: '${menu.title || ''}'
+`;
     yaml += `  open_command: [${menu.open_command || ''}]
 `;
     yaml += `  size: ${menu.size}
