@@ -1,6 +1,21 @@
 # DeluxeMenuWebEditor
+
 web editor for DeluxeMenu plugin
 website: https://DeluxeMenu.dianelito.online
+
+## 💻 How to run the code on any other host that is not Vercel
+steps if it's by commands:
+
+git clone https://github.com/Dianelito/DeluxMenuWebEditor
+npm install
+node local.js
+
+steps if it's online:
+
+clone the repository
+then install all the dependencies (ejs, express)
+And finally make it run the local.js
+
 
 ## 📄 License
 
