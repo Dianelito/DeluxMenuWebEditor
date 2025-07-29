@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeluxeMenus Editor</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>DeluxeMenus Editor</h1>
+    <div class="editor-container">
+        <div class="menu-settings">
+            <h2>Menu Settings</h2>
+            <form action="/generate" method="POST" id="menu-form">
+                <label for="menu_title">Menu Title:</label>
+                <input type="text" id="menu_title" name="menu_title" required><br>
+
+                <label for="open_command">Open Command:</label>
+                <input type="text" id="open_command" name="open_command"><br>
+
+                <label for="size">Size:</label>
+                <select id="size" name="size">
+                    <option value="9">9</option>
+                    <option value="18">18</option>
+                    <option value="27">27</option>
+                    <option value="36">36</option>
+                    <option value="45">45</option>
+                    <option value="54">54</option>
+                </select><br>
+
+                <h2>Items</h2>
+                <div id="items-container"></div>
+                <button type="button" id="add-item">Add Item</button>
+                <br><br>
+                <input type="file" id="import-file" accept=".yml,.yaml" style="display: none;">
+                <button type="button" id="import-button">Import</button>
+                <button type="submit" id="export-button">Export</button>
+            </form>
+        </div>
+        <div class="menu-preview-container">
+            <h2>Live Preview</h2>
+            <div id="menu-preview" class="inventory-grid"></div>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>
