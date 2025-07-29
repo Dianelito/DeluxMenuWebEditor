@@ -77,7 +77,9 @@ app.post('/generate', (req, res) => {
     res.send(yaml);
 });
 
-app.listen(port, () => {
-    console.log(`DeluxeMenus editor listening at http://localhost:${port}`);
-});
+// app.listen(port, () => {
+//     console.log(`DeluxeMenus editor listening at http://localhost:${port}`);
+// });
+
+module.exports = app;
 
