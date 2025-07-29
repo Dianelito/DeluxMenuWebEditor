@@ -18,65 +18,65 @@ app.get('/', (req, res) => {
 
 app.post('/generate', (req, res) => {
     const menu = req.body;
-    // Basic validation
+
     if (!menu.menu_title || !menu.size) {
         return res.status(400).send('Menu title and size are required.');
     }
 
-    let yaml = `${menu.menu_title}:
+    let yaml = `menu_title: '${menu.menu_title}'
 `;
-    yaml += `  title: '${menu.title || ''}'
+    yaml += `open_command: ${menu.open_command || ''}
 `;
-    yaml += `  open_command: [${menu.open_command || ''}]
+    yaml += `size: ${menu.size}
 `;
-    yaml += `  size: ${menu.size}
-`;
-    yaml += `  items:
+    yaml += `items:
 `;
 
     if (menu.items) {
         for (const key in menu.items) {
             const item = menu.items[key];
             if (item.material && item.slot !== undefined) {
-                yaml += `    '${item.slot}':
+                const itemName = item.material.toLowerCase().replace(/ /g, '_');
+                yaml += `  '${itemName}':
 `;
-                yaml += `      material: ${item.material}
+                yaml += `    material: ${item.material}
+`;
+                yaml += `    slot: ${item.slot}
 `;
                 if (item.display_name) {
-                    yaml += `      display_name: '${item.display_name}'
+                    yaml += `    display_name: '${item.display_name}'
 `;
                 }
                 if (item.lore) {
-                    yaml += `      lore:
+                    yaml += `    lore:
 `;
                     const loreLines = item.lore.split('\r\n');
                     loreLines.forEach(line => {
-                        yaml += `        - '${line}'
+                        yaml += `      - '${line}'
 `;
                     });
                 }
                 if (item.left_click_commands) {
-                    yaml += `      left_click_commands:
+                    yaml += `    left_click_commands:
 `;
                     const leftClickCommands = item.left_click_commands.split('\r\n');
                     leftClickCommands.forEach(command => {
-                        yaml += `        - '${command}'
+                        yaml += `      - '${command}'
 `;
                     });
                 }
                 if (item.right_click_commands) {
-                    yaml += `      right_click_commands:
+                    yaml += `    right_click_commands:
 `;
                     const rightClickCommands = item.right_click_commands.split('\r\n');
                     rightClickCommands.forEach(command => {
-                        yaml += `        - '${command}'
+                        yaml += `      - '${command}'
 `;
                     });
                 }
             }
         }
     }
-
 
     res.setHeader('Content-Type', 'text/plain');
     res.send(yaml);
