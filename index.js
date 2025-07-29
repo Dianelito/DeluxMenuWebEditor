@@ -29,8 +29,14 @@ app.post('/generate', (req, res) => {
 `;
     yaml += `size: ${menu.size}
 `;
-    yaml += `items:
-`;
+    if (menu.open_requirement) {
+        yaml += `open_requirement:\n`;
+        const openRequirementLines = menu.open_requirement.split('\r\n');
+        openRequirementLines.forEach(line => {
+            yaml += `  ${line}\n`;
+        });
+    }
+    yaml += `items:\n`;
 
     if (menu.items) {
         for (const key in menu.items) {
@@ -71,6 +77,33 @@ app.post('/generate', (req, res) => {
                     const rightClickCommands = item.right_click_commands.split('\r\n');
                     rightClickCommands.forEach(command => {
                         yaml += `      - '${command}'
+`;
+                    });
+                }
+                if (item.view_requirement) {
+                    yaml += `    view_requirement:
+`;
+                    const viewRequirementLines = item.view_requirement.split('\r\n');
+                    viewRequirementLines.forEach(line => {
+                        yaml += `      ${line}
+`;
+                    });
+                }
+                if (item.left_click_requirement) {
+                    yaml += `    left_click_requirement:
+`;
+                    const leftClickRequirementLines = item.left_click_requirement.split('\r\n');
+                    leftClickRequirementLines.forEach(line => {
+                        yaml += `      ${line}
+`;
+                    });
+                }
+                if (item.right_click_requirement) {
+                    yaml += `    right_click_requirement:
+`;
+                    const rightClickRequirementLines = item.right_click_requirement.split('\r\n');
+                    rightClickRequirementLines.forEach(line => {
+                        yaml += `      ${line}
 `;
                     });
                 }

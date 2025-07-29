@@ -20,8 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onload = (e) => {
             const content = e.target.result;
             try {
-                validateDeluxeMenuYaml(content);
-                const menuData = parseSimpleYaml(content);
+                const menuData = parseYaml(content);
                 populateForm(menuData);
                 updatePreview();
             } catch (error) {
@@ -32,101 +31,102 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     });
 
-    function validateDeluxeMenuYaml(content) {
-        if (!content.trim()) {
-            throw new Error('File is empty.');
-        }
-
+    function parseYaml(content) {
+        const data = { items: {} };
         const lines = content.split('\n');
-        const firstLine = lines.find(line => line.trim() !== '');
-        if (!firstLine || !firstLine.trim().endsWith(':') || firstLine.startsWith(' ')) {
-            throw new Error('Invalid format: The file must start with a menu title (e.g., "my_menu:").');
-        }
+        let currentItemKey = null;
+        let currentListKey = null;
 
-        if (!content.includes('size:')) {
-            throw new Error('Invalid format: Missing "size" property.');
-        }
-
-        if (!content.includes('items:')) {
-            throw new Error('Invalid format: Missing "items" section.');
-        }
-    }
-
-    function parseSimpleYaml(content) {
-        const lines = content.split('\n');
-        let menuTitle = '';
-        let title = '';
-        let openCommand = '';
-        let size = '9';
-        const items = {};
-        let currentItem = null;
-        let currentSection = '';
-
-        lines.forEach(line => {
+        for (const line of lines) {
             const trimmedLine = line.trim();
-            if (trimmedLine.endsWith(':')) {
-                const key = trimmedLine.slice(0, -1);
-                if (!line.startsWith(' ')) {
-                    menuTitle = key;
-                } else if (line.startsWith('    ') && !line.startsWith('      ')) {
-                    currentItem = key.replace(/'/g, '');
-                    items[currentItem] = {};
-                    currentSection = '';
-                } else if (line.startsWith('      ')) {
-                    currentSection = key;
-                    if (currentItem) items[currentItem][currentSection] = [];
+            const indent = line.length - line.trimStart().length;
+
+            if (!trimmedLine || trimmedLine.startsWith('#')) {
+                continue; // Skip empty lines and comments
+            }
+
+            if (indent === 0) {
+                const [key, ...valueParts] = trimmedLine.split(':');
+                const value = valueParts.join(':').trim().replace(/'/g, '');
+                if (key === 'items') {
+                    currentItemKey = null;
+                    currentListKey = null;
+                } else if (key) {
+                    data[key.trim()] = value;
                 }
-            } else {
-                const parts = trimmedLine.split(': ');
-                if (parts.length === 2) {
-                    const key = parts[0];
-                    const value = parts[1].replace(/'/g, '');
-                    if (key === 'title') title = value;
-                    if (key === 'size') size = value;
-                    if (currentItem && currentSection === '') {
-                        items[currentItem][key] = value;
+            } else if (indent === 2 && trimmedLine.endsWith(':')) { // Item definition
+                currentItemKey = trimmedLine.slice(0, -1).replace(/'/g, '');
+                data.items[currentItemKey] = {};
+                currentListKey = null;
+            } else if (indent === 4) { // Item properties
+                const [key, ...valueParts] = trimmedLine.split(':');
+                const value = valueParts.join(':').trim().replace(/'/g, '');
+                if (value) { // Single line property
+                    if (currentItemKey) {
+                        data.items[currentItemKey][key.trim()] = value;
+                        currentListKey = null;
                     }
-                } else if (trimmedLine.startsWith('- ')) {
-                    const value = trimmedLine.substring(2).replace(/'/g, '');
-                    if (currentItem && currentSection) {
-                        items[currentItem][currentSection].push(value);
+                } else { // Start of a list or requirement block
+                    currentListKey = key.trim();
+                    if (currentItemKey) {
+                        if (currentListKey.endsWith('_requirement')) {
+                            data.items[currentItemKey][currentListKey] = '';
+                        } else {
+                            data.items[currentItemKey][currentListKey] = [];
+                        }
+                    }
+                }
+            } else if (indent > 4) { // List item or requirement line
+                if (currentItemKey && currentListKey) {
+                    if (currentListKey.endsWith('_requirement')) {
+                        data.items[currentItemKey][currentListKey] += line + '\n';
+                    } else if (trimmedLine.startsWith('- ')) {
+                        const value = trimmedLine.substring(2).trim().replace(/'/g, '');
+                        data.items[currentItemKey][currentListKey].push(value);
                     }
                 }
             }
-        });
-        return { menuTitle, openCommand, size, items, title };
+        }
+        return data;
     }
 
     function populateForm(menuData) {
-        document.getElementById('menu_title').value = menuData.menuTitle;
-        document.getElementById('title').value = menuData.title;
-        document.getElementById('open_command').value = menuData.openCommand;
-        sizeSelector.value = menuData.size;
+        document.getElementById('menu_title').value = menuData.menu_title || '';
+        document.getElementById('open_command').value = menuData.open_command || '';
+        sizeSelector.value = menuData.size || 9;
 
         itemsContainer.innerHTML = '';
         itemIndex = 0;
-        for (const key in menuData.items) {
-            itemIndex++;
-            const item = menuData.items[key];
-            const itemDiv = document.createElement('div');
-            itemDiv.classList.add('item');
-            itemDiv.innerHTML = `
-                <h3>Item ${itemIndex}</h3>
-                <label>Slot:</label>
-                <input type="number" name="items[item_${itemIndex}][slot]" min="0" max="53" value="${key}" required><br>
-                <label>Material:</label>
-                <input type="text" name="items[item_${itemIndex}][material]" value="${item.material || ''}" required><br>
-                <label>Display Name:</label>
-                <input type="text" name="items[item_${itemIndex}][display_name]" value="${item.display_name || ''}"><br>
-                <label>Lore (one line per line):</label>
-                <textarea name="items[item_${itemIndex}][lore]">${(item.lore || []).join('\n')}</textarea><br>
-                <label>Left Click Commands (one per line):</label>
-                <textarea name="items[item_${itemIndex}][left_click_commands]">${(item.left_click_commands || []).join('\n')}</textarea><br>
-                <label>Right Click Commands (one per line):</label>
-                <textarea name="items[item_${itemIndex}][right_click_commands]">${(item.right_click_commands || []).join('\n')}</textarea><br>
-                <button type="button" class="remove-item">Remove Item</button>
-            `;
-            itemsContainer.appendChild(itemDiv);
+        if (menuData.items) {
+            for (const key in menuData.items) {
+                itemIndex++;
+                const item = menuData.items[key];
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('item');
+                itemDiv.innerHTML = `
+                    <h3>Item ${itemIndex} (id: ${key})</h3>
+                    <label>Slot:</label>
+                    <input type="number" name="items[item_${itemIndex}][slot]" min="0" max="53" value="${item.slot || ''}" required><br>
+                    <label>Material:</label>
+                    <input type="text" name="items[item_${itemIndex}][material]" value="${item.material || ''}" required><br>
+                    <label>Display Name:</label>
+                    <input type="text" name="items[item_${itemIndex}][display_name]" value="${item.display_name || ''}"><br>
+                    <label>Lore (one line per line):</label>
+                    <textarea name="items[item_${itemIndex}][lore]">${(item.lore || []).join('\n')}</textarea><br>
+                    <label>Left Click Commands (one per line):</label>
+                    <textarea name="items[item_${itemIndex}][left_click_commands]">${(item.left_click_commands || []).join('\n')}</textarea><br>
+                    <label>Right Click Commands (one per line):</label>
+                    <textarea name="items[item_${itemIndex}][right_click_commands]">${(item.right_click_commands || []).join('\n')}</textarea><br>
+                    <label>View Requirement:</label>
+                    <textarea name="items[item_${itemIndex}][view_requirement]" rows="5">${item.view_requirement || ''}</textarea><br>
+                    <label>Left Click Requirement:</label>
+                    <textarea name="items[item_${itemIndex}][left_click_requirement]" rows="5">${item.left_click_requirement || ''}</textarea><br>
+                    <label>Right Click Requirement:</label>
+                    <textarea name="items[item_${itemIndex}][right_click_requirement]" rows="5">${item.right_click_requirement || ''}</textarea><br>
+                    <button type="button" class="remove-item">Remove Item</button>
+                `;
+                itemsContainer.appendChild(itemDiv);
+            }
         }
     }
 
@@ -212,6 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <textarea name="items[item_${itemIndex}][left_click_commands]"></textarea><br>
             <label>Right Click Commands (one per line):</label>
             <textarea name="items[item_${itemIndex}][right_click_commands]"></textarea><br>
+            <label>View Requirement:</label>
+            <textarea name="items[item_${itemIndex}][view_requirement]" rows="5"></textarea><br>
+            <label>Left Click Requirement:</label>
+            <textarea name="items[item_${itemIndex}][left_click_requirement]" rows="5"></textarea><br>
+            <label>Right Click Requirement:</label>
+            <textarea name="items[item_${itemIndex}][right_click_requirement]" rows="5"></textarea><br>
             <button type="button" class="remove-item">Remove Item</button>
         `;
         itemsContainer.appendChild(itemDiv);
