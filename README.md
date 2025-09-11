@@ -8,7 +8,7 @@ steps if it's by commands:
 
 git clone https://github.com/Dianelito/DeluxMenuWebEditor
 npm install
-npm run dev or vite
+npm run dev
 
 steps if it's online:
 
