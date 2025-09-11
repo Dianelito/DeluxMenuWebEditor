@@ -8,7 +8,7 @@ steps if it's by commands:
 
 git clone https://github.com/Dianelito/DeluxMenuWebEditor
 npm install
-node local.js
+npm run dev or vite
 
 steps if it's online:
 
